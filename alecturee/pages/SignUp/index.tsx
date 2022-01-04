@@ -1,20 +1,44 @@
+import useInput from '@hooks/useInput';
 import React, { useCallback, useState } from 'react';
 import { Link } from 'react-router-dom';
 
 import { Success, Form, Error, Label, Input, LinkContainer, Button, Header } from './styles';
 
 function SignUp() {
-  const [email] = useState('');
-  const [nickname] = useState('');
-  const [password] = useState('');
-  const [passwordCheck] = useState('');
+  const [email, onChangeEmail, setEmail] = useInput('');
+  const [nickname, onChangeNickname, setNickname] = useInput('');
+  const [password, , setPassword] = useInput('');
+  const [passwordCheck, , setPasswordCheck] = useInput('');
+  const [mismatchError, setMismatchError] = useState(false);
 
-  const onChangeEmail = useCallback(() => {}, []);
-  const onChangeNickname = useCallback(() => {}, []);
-  const onChangePassword = useCallback(() => {}, []);
-  const onChangePasswordCheck = useCallback(() => {}, []);
+  const onChangePassword = useCallback(
+    (e) => {
+      setPassword(e.target.value);
+      //passwordCheck (재입력) 과 현재 값을 비교
+      setMismatchError(e.target.value != passwordCheck);
+    },
+    [passwordCheck],
+  );
 
-  const onSubmit = useCallback(() => {}, []);
+  const onChangePasswordCheck = useCallback(
+    (e) => {
+      setPasswordCheck(e.target.value);
+      //password (처음 입력된 password)와 현재 값을 비교
+      setMismatchError(e.target.value != password);
+    },
+    [password],
+  );
+
+  const onSubmit = useCallback(
+    (e) => {
+      e.preventDefault();
+      console.log(email, nickname, password, passwordCheck);
+      if (!mismatchError) {
+        console.log('서버로 회원가입하기');
+      }
+    },
+    [email, nickname, password, passwordCheck, mismatchError],
+  );
 
   return (
     <div id="container">
@@ -49,7 +73,8 @@ function SignUp() {
               onChange={onChangePasswordCheck}
             />
           </div>
-          {/* {mismatchError && <Error>비밀번호가 일치하지 않습니다.</Error>}
+          {mismatchError && <Error>비밀번호가 일치하지 않습니다.</Error>}
+          {/*
           {!nickname && <Error>닉네임을 입력해주세요.</Error>}
           {signUpError && <Error>{signUpError}</Error>}
           {signUpSuccess && <Success>회원가입되었습니다! 로그인해주세요.</Success>} */}
