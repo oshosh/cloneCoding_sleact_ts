@@ -8,7 +8,7 @@ import useSWR from 'swr';
 
 const LogIn = () => {
   const { data, error, revalidate, mutate } = useSWR('http://localhost:3095/api/users', fetcher, {
-    dedupingInterval: 100000,
+    dedupingInterval: 2000,
   });
 
   const [logInError, setLogInError] = useState(false);
@@ -28,7 +28,8 @@ const LogIn = () => {
           },
         )
         .then((response) => {
-          revalidate(); // 다시 fetcher 실행
+          // revalidate(); // 다시 fetcher 실행
+          mutate(response.data, false); // optimistic ui (서버에 다시 가지않고 미리 적용 시키고 이후 서버에서 데이터 점검)
         })
         .catch((error) => {
           setLogInError(error.response?.data?.statusCode === 401);
