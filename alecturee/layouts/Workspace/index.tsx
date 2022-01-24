@@ -2,7 +2,7 @@ import fetcher from '@utils/fetcher';
 import axios from 'axios';
 import { type } from 'os';
 import React, { useCallback, ReactNode } from 'react';
-import { Redirect } from 'react-router';
+import { Redirect, Route, Switch } from 'react-router';
 import useSWR from 'swr';
 import {
   Header,
@@ -16,6 +16,8 @@ import {
   MenuScroll,
 } from '@layouts/Workspace/styles';
 import gravatar from 'gravatar';
+import Channel from '@pages/Channel';
+import DirectMessage from '@pages/DirectMessage';
 
 type Props = {
   children?: ReactNode;
@@ -54,7 +56,12 @@ function Workspace({ children }: Props) {
           <WorkspaceName>Sleact</WorkspaceName>
           <MenuScroll>menu scroll</MenuScroll>
         </Channels>
-        <Chats>Chats</Chats>
+        <Chats>
+          <Switch>
+            <Route path="/workspace/channel" component={Channel} />
+            <Route path="/workspace/dm" component={DirectMessage} />
+          </Switch>
+        </Chats>
       </WorkspaceWrapper>
       <button onClick={onLogout}> 로그아웃</button>
     </div>
