@@ -2,7 +2,7 @@ import fetcher from '@utils/fetcher';
 import axios from 'axios';
 import { type } from 'os';
 import React, { useCallback, ReactNode, useState } from 'react';
-import { Redirect as LoginRedirect, Route, Switch } from 'react-router';
+import { Redirect, Route, Switch, useParams } from 'react-router';
 import useSWR from 'swr';
 import {
   Header,
@@ -25,12 +25,14 @@ import Channel from '@pages/Channel';
 import DirectMessage from '@pages/DirectMessage';
 import Menu from '@components/Menu';
 import { Link } from 'react-router-dom';
-import { IUser, IWorkspace } from '@typings/db';
+import { IChannel, IUser, IWorkspace } from '@typings/db';
 import { Button, Input, Label } from '@pages/SignUp/styles';
 import useInput from '@hooks/useInput';
 import Modal from '@components/Modal';
 import { toast } from 'react-toastify';
 import CreateChannelModal from '@components/CreateChannelModal';
+import InviteWorkspaceModal from '@components/InviteWorkSpaceModal';
+import InviteChannelModal from '@components/InviteChannelModal';
 
 type Props = {
   children?: ReactNode;
@@ -43,14 +45,25 @@ function Workspace({ children }: Props) {
   const [showWorkSpaceModal, setShowWorkSpaceModal] = useState(false);
   const [showCreateChannelModal, setShowCreateChannelModal] = useState(false);
 
+  const [showInviteWorkSpaceModal, setShowInviteWorkSpaceModal] = useState(false);
+  const [showInviteChannelModal, setShowInviteChannelModal] = useState(false);
+
   const [newWorkSpace, onChangeNewSpace, setNewWorkSpace] = useInput('');
   const [newUrl, onChangeNewUrl, setNewUrl] = useInput('');
+
+  const { workspace } = useParams<{ workspace: string }>();
+
   const {
     data: userData,
     error,
     revalidate,
     mutate,
   } = useSWR<IUser | false>('http://localhost:3095/api/users', fetcher);
+
+  const { data: channelData } = useSWR<IChannel[]>(
+    userData ? `http://localhost:3095/api/workspaces/${workspace}/channels` : null,
+    fetcher,
+  );
 
   const onLogout = useCallback(() => {
     axios
@@ -106,6 +119,8 @@ function Workspace({ children }: Props) {
   const onCloseModal = useCallback(() => {
     setShowCreateWorkspaceModal(false);
     setShowCreateChannelModal(false);
+    setShowInviteWorkSpaceModal(false);
+    setShowInviteChannelModal(false);
   }, []);
 
   const toggleWorkSpaceModal = useCallback(() => {
@@ -116,8 +131,10 @@ function Workspace({ children }: Props) {
     setShowCreateChannelModal(true);
   }, []);
 
+  const onClickInviteWorkSpace = useCallback(() => {}, []);
+
   if (!userData) {
-    return <LoginRedirect to="/login" />;
+    return <Redirect to="/login" />;
   }
 
   return (
@@ -145,7 +162,7 @@ function Workspace({ children }: Props) {
       <WorkspaceWrapper>
         <Workspaces>
           {/* 해당 워크 스페이스 이동 */}
-          {userData?.Workspaces.map((ws: IWorkspace) => {
+          {userData?.Workspaces?.map((ws) => {
             return (
               <Link key={ws.id} to={`/workspace/${123}/channel/일반`}>
                 <WorkspaceButton>{ws.name.slice(0, 1).toUpperCase()} </WorkspaceButton>
@@ -159,16 +176,20 @@ function Workspace({ children }: Props) {
           <MenuScroll>
             <Menu show={showWorkSpaceModal} onCloseModal={toggleWorkSpaceModal} style={{ top: 95, left: 80 }}>
               <WorkspaceModal>
+                <button onClick={onClickInviteWorkSpace}>워크스페이스 사용자 초대</button>
                 <button onClick={onClickAddChannel}>채널만들기</button>
                 <button onClick={onLogout}>로그아웃</button>
               </WorkspaceModal>
             </Menu>
+            {channelData?.map((v) => (
+              <div>{v.name}</div>
+            ))}
           </MenuScroll>
         </Channels>
         <Chats>
           <Switch>
-            <Route path="/workspace/channel" component={Channel} />
-            <Route path="/workspace/dm" component={DirectMessage} />
+            <Route path="/workspace/:workspace/channel/:channel" component={Channel} />
+            <Route path="/workspace/:workspace/dm/:id" component={DirectMessage} />
           </Switch>
         </Chats>
       </WorkspaceWrapper>
@@ -192,6 +213,18 @@ function Workspace({ children }: Props) {
         show={showCreateChannelModal}
         onCloseModal={onCloseModal}
         setShowCreateChannelModal={setShowCreateChannelModal}
+      />
+
+      <InviteWorkspaceModal
+        show={showInviteWorkSpaceModal}
+        onCloseModal={onCloseModal}
+        setShowInviteWorkspaceModal={setShowInviteWorkSpaceModal}
+      />
+
+      <InviteChannelModal
+        show={showInviteChannelModal}
+        onCloseModal={onCloseModal}
+        setShowInviteChannelModal={setShowInviteChannelModal}
       />
     </div>
   );

@@ -30,9 +30,31 @@ const CreateChannelModal: VFC<Props> = ({ show, onCloseModal, setShowCreateChann
     revalidate: revalidateChannel,
   } = useSWR<IChannel[]>(userData ? `/api/workspaces/${workspace}/channels` : null, fetcher);
 
-  const onCreateChannel = useCallback((e) => {
-    e.preventDefault();
-  }, []);
+  const onCreateChannel = useCallback(
+    (e) => {
+      e.preventDefault();
+      axios
+        .post(
+          `http://localhost:3095/api/workspaces/${workspace}/channels`,
+          {
+            name: newChannel,
+          },
+          {
+            withCredentials: true,
+          },
+        )
+        .then(() => {
+          setShowCreateChannelModal(false);
+          setNewChannel('');
+          revalidateChannel(); // 채널 새로 생성 후 swr로 갱신 해주기
+        })
+        .catch((error) => {
+          console.dir(error);
+          toast.error(error.response?.data, { position: 'bottom-center' });
+        });
+    },
+    [newChannel],
+  );
 
   return (
     <Modal show={show} onCloseModal={onCloseModal}>
