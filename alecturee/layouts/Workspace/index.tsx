@@ -33,6 +33,8 @@ import { toast } from 'react-toastify';
 import CreateChannelModal from '@components/CreateChannelModal';
 import InviteWorkspaceModal from '@components/InviteWorkSpaceModal';
 import InviteChannelModal from '@components/InviteChannelModal';
+import DMList from '@components/DMList';
+import ChannelList from '@components/ChannelList';
 
 type Props = {
   children?: ReactNode;
@@ -53,21 +55,13 @@ function Workspace({ children }: Props) {
 
   const { workspace } = useParams<{ workspace: string }>();
 
-  const {
-    data: userData,
-    error,
-    revalidate,
-    mutate,
-  } = useSWR<IUser | false>('http://localhost:3095/api/users', fetcher);
+  const { data: userData, error, revalidate, mutate } = useSWR<IUser | false>('/api/users', fetcher);
 
-  const { data: channelData } = useSWR<IChannel[]>(
-    userData ? `http://localhost:3095/api/workspaces/${workspace}/channels` : null,
-    fetcher,
-  );
+  const { data: channelData } = useSWR<IChannel[]>(userData ? `/api/workspaces/${workspace}/channels` : null, fetcher);
 
   const onLogout = useCallback(() => {
     axios
-      .post('http://localhost:3095/api/users/logout', null, {
+      .post('/api/users/logout', null, {
         withCredentials: true,
       })
       .then(() => {
@@ -93,7 +87,7 @@ function Workspace({ children }: Props) {
 
       axios
         .post(
-          'http://localhost:3095/api/workspaces',
+          '/api/workspaces',
           {
             workspace: newWorkSpace,
             url: newUrl,
@@ -131,7 +125,9 @@ function Workspace({ children }: Props) {
     setShowCreateChannelModal(true);
   }, []);
 
-  const onClickInviteWorkSpace = useCallback(() => {}, []);
+  const onClickInviteWorkSpace = useCallback(() => {
+    setShowInviteWorkSpaceModal(true);
+  }, []);
 
   if (!userData) {
     return <Redirect to="/login" />;
@@ -181,9 +177,10 @@ function Workspace({ children }: Props) {
                 <button onClick={onLogout}>로그아웃</button>
               </WorkspaceModal>
             </Menu>
-            {channelData?.map((v) => (
-              <div>{v.name}</div>
-            ))}
+            {/* Channels */}
+            <ChannelList />
+            {/* Direct Messages */}
+            <DMList />
           </MenuScroll>
         </Channels>
         <Chats>
@@ -215,6 +212,7 @@ function Workspace({ children }: Props) {
         setShowCreateChannelModal={setShowCreateChannelModal}
       />
 
+      {/* 워크스페이스 사용자 초대 */}
       <InviteWorkspaceModal
         show={showInviteWorkSpaceModal}
         onCloseModal={onCloseModal}
