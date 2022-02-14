@@ -68,7 +68,7 @@ function Workspace({ children }: Props) {
         // revalidate();
         mutate(false, false);
       });
-  }, []);
+  }, [mutate]);
 
   const onClickUserProfile = useCallback((e) => {
     e.stopPropagation();
