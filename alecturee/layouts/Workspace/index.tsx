@@ -67,7 +67,18 @@ function Workspace({ children }: Props) {
   const { data: memberData } = useSWR<IUser[]>(userData ? `/api/workspaces/${workspace}/members` : null, fetcher);
   const [socket, diconnect] = useSocket(workspace);
 
-  useEffect(() => {}, [diconnect, socket]);
+  useEffect(() => {
+    if (channelData && userData && socket) {
+      socket.emit('login', { id: userData.id, channels: channelData.map((v) => v.id) });
+    }
+  }, [channelData, socket, userData]);
+
+  useEffect(() => {
+    // workspace가 변화하기 때문에 외부 변화도 같이 체크해줘야함
+    return () => {
+      diconnect();
+    };
+  }, [diconnect, workspace]);
 
   const onLogout = useCallback(() => {
     axios
