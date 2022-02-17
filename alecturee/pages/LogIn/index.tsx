@@ -35,7 +35,7 @@ const LogIn = () => {
           setLogInError(error.response?.data?.statusCode === 401);
         });
     },
-    [email, password],
+    [email, mutate, password],
   );
 
   if (data === undefined) {

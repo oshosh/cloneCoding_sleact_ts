@@ -19,16 +19,16 @@ const DirectMessage = () => {
     data: chatData,
     mutate: mutateChat,
     revalidate,
-    // } = useSWR<IDM[]>(`api/workspaces/${workspace}/dms/${id}/chat?perPage=${PAGE_SIZE}&page=${index + 1}`, fetcher);
-  } = useSWR<IDM[]>(`api/workspaces/${workspace}/dms/${id}/chat?perPage=20&page=1`, fetcher);
+  } = useSWR<IDM[]>(`/api/workspaces/${workspace}/dms/${id}/chats?perPage=20&page=1`, fetcher);
 
   const onSubmitForm = useCallback(
     (e) => {
       e.preventDefault();
+      console.log(chat);
       if (chat?.trim()) {
         // 채팅 등록
         axios
-          .post(`api/workspaces/${workspace}/dms/${id}/chats`, {
+          .post(`/api/workspaces/${workspace}/dms/${id}/chats`, {
             content: chat,
           })
           .then(() => {
@@ -53,7 +53,7 @@ const DirectMessage = () => {
         <span>{userData.nickname}</span>
       </Header>
       {/* 채팅 현황 */}
-      <ChatList />
+      <ChatList chatData={chatData} />
       {/* 채팅 박스 */}
       <ChatBox chat={chat} onChangeChat={onChangeChat} onSubmitForm={onSubmitForm} />
     </Container>

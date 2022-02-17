@@ -128,7 +128,7 @@ function Workspace({ children }: Props) {
           toast.error(error.response?.data, { position: 'bottom-center' });
         });
     },
-    [newWorkSpace, newUrl],
+    [newWorkSpace, newUrl, revalidate, setNewWorkSpace, setNewUrl],
   );
 
   const onCloseModal = useCallback(() => {
